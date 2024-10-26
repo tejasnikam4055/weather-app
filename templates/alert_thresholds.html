@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Alert Thresholds</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    /* Body background styling */
+    body {
+        background-image: url('/static/images/background.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #fff;
+    }
+
+    /* Container and Card Background */
+.container, .card {
+    background-color: #000; /* Black background */
+    color: #fff; /* White text */
+    border: none; /* Remove card border for seamless look */
+}
+
+/* Card Body Style */
+.card-body {
+    background-color: #111; /* Slightly lighter black for card body */
+    color: #fff; /* Ensure text is visible */
+}
+
+/* Form and Table Elements */
+.form-select, .form-control, .table {
+    background-color: #222; /* Dark gray for inputs and table */
+    color: #fff; /* White text */
+    border: 1px solid #444; /* Border to define elements */
+}
+
+.table th, .table td {
+    background-color: #333; /* Dark background for table cells */
+    color: #fff; /* Ensure text is visible */
+}
+
+.table-responsive {
+    background-color: #111; /* Background for the table container */
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #0056b3; /* Bright blue for contrast */
+    border-color: #0056b3;
+}
+
+    </style>
+<body>
+    <div class="container mt-4">
+        <h2>Weather Alert Thresholds</h2>
+        
+        <!-- Alert Threshold Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Add New Alert Threshold</h4>
+                <form id="thresholdForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <select class="form-select" id="city" required>
+                                {% for city in cities %}
+                                <option value="{{ city }}">{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Recipient</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="highTemp" class="form-label">High Temperature Threshold (°C)</label>
+                            <input type="number" class="form-control" id="highTemp" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="lowTemp" class="form-label">Low Temperature Threshold (°C)</label>
+                            <input type="number" class="form-control" id="lowTemp" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="consecutive" class="form-label">Consecutive Triggers</label>
+                            <input type="number" class="form-control" id="consecutive" value="2" min="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Threshold</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Existing Thresholds Table -->
+        <div class="card">
+            <div class="card-body">
+                <h4>Existing Thresholds</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th>High Temp (°C)</th>
+                                <th>Low Temp (°C)</th>
+                                <th>Consecutive Triggers</th>
+                                <th>Email Recipient</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="thresholdsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load existing thresholds
+        async function loadThresholds() {
+            try {
+                const response = await fetch('/alert-thresholds');
+                const thresholds = await response.json();
+                const tableBody = document.getElementById('thresholdsTable');
+                tableBody.innerHTML = '';
+                
+                thresholds.forEach(threshold => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${threshold.city}</td>
+                        <td>${threshold.high_temp_threshold}°C</td>
+                        <td>${threshold.low_temp_threshold}°C</td>
+                        <td>${threshold.consecutive_triggers}</td>
+                        <td>${threshold.email_recipient}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" 
+                                    onclick="deleteThreshold(${threshold.id})">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading thresholds:', error);
+                alert('Failed to load thresholds');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('thresholdForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                city: document.getElementById('city').value,
+                high_temp_threshold: document.getElementById('highTemp').value,
+                low_temp_threshold: document.getElementById('lowTemp').value,
+                consecutive_triggers: document.getElementById('consecutive').value,
+                email_recipient: document.getElementById('email').value
+            };
+
+            try {
+                const response = await fetch('/alert-thresholds', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Failed to create threshold');
+                
+                alert('Threshold created successfully');
+                loadThresholds();
+                e.target.reset();
+            } catch (error) {
+                console.error('Error creating threshold:', error);
+                alert('Failed to create threshold');
+            }
+        });
+
+        // Load thresholds on page load
+        loadThresholds();
+    </script>
+</body>
+</html>

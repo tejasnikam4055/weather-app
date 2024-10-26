@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Monitoring System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Body background styling */
+        body {
+            background-image: url('/static/images/background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+        }
+    
+        /* Weather card styling */
+        .weather-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.8); /* Black with slight transparency */
+            color: #fff; /* White text for contrast */
+            border-radius: 8px; /* Rounded corners for a modern look */
+            padding: 20px;
+        }
+    
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+    
+        /* Icon and other styling */
+        .weather-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: bold; /* Make the icon bold */
+    color: #fff; /* White color for high contrast on black background */
+}
+
+    
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+    
+        .weather-display,
+        .daily-report {
+            display: none;
+        }
+    
+        .btn-group {
+            margin-bottom: 20px;
+        }
+    
+        .manage-thresholds-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        #weatherForm {
+    background-color: #000; /* Black background */
+    color: #fff; /* White text color for readability */
+    border: none;
+}
+
+#weatherForm .form-label, #weatherForm .form-select, #weatherForm button {
+    color: #fff; /* White color for text and form elements */
+}
+
+#weatherForm .btn-primary {
+    background-color: #007bff; /* Blue button for 'Get Current Weather' */
+    border-color: #007bff;
+    color: #fff;
+}
+
+#weatherForm .btn-secondary {
+    background-color: #b23c12; /* Gray button for 'Get Daily Report' */
+    border-color: #6c757d;
+    color: #fff;
+}
+#weatherForm .form-select {
+    background-color: #333; /* Dark gray background for dropdown */
+    color: #fff; /* White text color */
+    border: 1px solid #555; /* Subtle border to define the dropdown area */
+}
+
+#weatherForm .form-select option {
+    background-color: #333; /* Dark background for each option */
+    color: #fff; /* White text for options */
+}
+.daily-report {
+    background-color: #000; /* Black background for the daily report section */
+    color: #f1f1f1; /* Default light text color */
+}
+
+.daily-report .card {
+    background-color: #222; /* Darker card background */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Optional: Add a border for visibility */
+}
+
+.daily-report .card-header {
+    background-color: #333; /* Darker header background */
+    color: #fff; /* Light header text */
+}
+
+.daily-report .table {
+    width: 100%; /* Full-width table */
+    color: #f1f1f1; /* Light text color for table */
+}
+
+.daily-report .table th {
+    color: #fff; /* White text for table headers */
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly lighter background for header */
+}
+
+.daily-report .table td {
+    color: #f1f1f1; /* Light text for table cells */
+}
+
+.daily-report .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05); /* Alternate row color for better visibility */
+}
+
+    </style>
+    
+    <div class="overlay">
+        <!-- Weather display and other content here -->
+    </div>
+    
+        
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4 text-center">Weather Monitoring System</h1>
+        
+        <!-- City Selection Form -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <form id="weatherForm" class="card p-3 shadow-sm">
+                    <div class="mb-3">
+                        <label for="city" class="form-label">Select a City:</label>
+                        <select id="city" name="city" class="form-select">
+                            {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="submit" class="btn btn-primary">Get Current Weather</button>
+                        <button type="button" class="btn btn-secondary" id="getDailyReport">Get Daily Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Fetching data...</p>
+        </div>
+
+        <!-- Weather Display Section -->
+        <div id="weatherDisplay" class="weather-display">
+            <div class="row">
+                <!-- Main Weather Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card weather-card shadow">
+                        <div class="card-body text-center">
+                            <h3 id="cityName" class="card-title mb-3"></h3>
+                            <div id="weatherIcon" class="weather-icon"></div>
+                            <h4 id="temperature" class="mb-3"></h4>
+                            <p id="weatherDescription" class="mb-2"></p>
+                            <p id="timestamp" class="text-muted"></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Details Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card weather-card shadow">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">Weather Details</h4>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1">Max Temperature</p>
+                                    <h5 id="maxTemp"></h5>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1">Min Temperature</p>
+                                    <h5 id="minTemp"></h5>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1">Humidity</p>
+                                    <h5 id="humidity"></h5>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1">Wind Speed</p>
+                                    <h5 id="windSpeed"></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Report Section -->
+        <div id="dailyReport" class="daily-report">
+            <div class="card weather-card shadow">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Daily Weather Report</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>City</th>
+                            <td id="reportCity"></td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td id="reportDate"></td>
+                        </tr>
+                        <tr>
+                            <th>Average Temperature</th>
+                            <td id="reportAvgTemp"></td>
+                        </tr>
+                        <tr>
+                            <th>Maximum Temperature</th>
+                            <td id="reportMaxTemp"></td>
+                        </tr>
+                        <tr>
+                            <th>Minimum Temperature</th>
+                            <td id="reportMinTemp"></td>
+                        </tr>
+                        <tr>
+                            <th>Dominant Weather Condition</th>
+                            <td id="reportWeatherCondition"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="errorAlert" class="alert alert-danger d-none" role="alert">
+        </div>
+
+        <!-- Manage Thresholds Button -->
+        <button 
+            onclick="window.location.href='/manage-alerts'" 
+            class="btn btn-warning manage-thresholds-btn shadow">
+            <i class="bi bi-gear-fill"></i> Manage Thresholds
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('weatherForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const city = document.getElementById('city').value;
+            const loading = document.getElementById('loading');
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            // Show loading, hide previous content
+            loading.style.display = 'block';
+            weatherDisplay.style.display = 'none';
+            errorAlert.classList.add('d-none');
+            
+            try {
+                const response = await fetch(`/weather/${city}`);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch weather data');
+                
+                // Update the weather display
+                document.getElementById('cityName').textContent = data.data.name;
+                document.getElementById('temperature').textContent = `${Math.round(data.data.main.temp)}°C`;
+                document.getElementById('weatherDescription').textContent = data.data.weather[0].description;
+                document.getElementById('maxTemp').textContent = `${Math.round(data.data.main.temp_max)}°C`;
+                document.getElementById('minTemp').textContent = `${Math.round(data.data.main.temp_min)}°C`;
+                document.getElementById('humidity').textContent = `${data.data.main.humidity}%`;
+                document.getElementById('windSpeed').textContent = `${data.data.wind.speed} m/s`;
+                document.getElementById('timestamp').textContent = `Last updated: ${data.timestamp_ist}`;
+
+                // Set weather icon
+                const weatherIconCode = data.data.weather[0].icon;
+                document.getElementById('weatherIcon').innerHTML = `
+                    <img src="http://openweathermap.org/img/wn/${weatherIconCode}@2x.png" alt="Weather icon">
+                `;
+                
+                // Show weather display
+                loading.style.display = 'none';
+                weatherDisplay.style.display = 'block';
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                errorAlert.textContent = error.message;
+                errorAlert.classList.remove('d-none');
+            }
+        });
+
+        // Daily report button handler
+        document.getElementById('getDailyReport').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const city = document.getElementById('city').value;
+            const loading = document.getElementById('loading');
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const dailyReport = document.getElementById('dailyReport');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            // Show loading, hide previous content
+            loading.style.display = 'block';
+            weatherDisplay.style.display = 'none';
+            dailyReport.style.display = 'none';
+            errorAlert.classList.add('d-none');
+            
+            try {
+                const response = await fetch(`/daily_report/${city}`);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch daily report');
+                
+                // Update the daily report display
+                document.getElementById('reportCity').textContent = data.data.city;
+                document.getElementById('reportDate').textContent = data.data.date;
+                document.getElementById('reportAvgTemp').textContent = `${data.data.average_temperature}°C`;
+                document.getElementById('reportMaxTemp').textContent = `${data.data.max_temperature}°C`;
+                document.getElementById('reportMinTemp').textContent = `${data.data.min_temperature}°C`;
+                document.getElementById('reportWeatherCondition').textContent = data.data.dominant_weather_condition;
+                
+                // Show daily report
+                loading.style.display = 'none';
+                dailyReport.style.display = 'block';
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                errorAlert.textContent = error.message;
+                errorAlert.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

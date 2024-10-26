@@ -1,0 +1,27 @@
+<!-- templates/summary.html -->
+{% extends "base.html" %}
+
+{% block title %}Weather Summary{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">Daily Weather Summary</h2>
+    <div class="row">
+        {% for summary in weather_summaries %}
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    {{ summary.date }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Avg Temp: {{ summary.avg_temp }} °C</li>
+                    <li class="list-group-item">Max Temp: {{ summary.max_temp }} °C</li>
+                    <li class="list-group-item">Min Temp: {{ summary.min_temp }} °C</li>
+                    <li class="list-group-item">Dominant Weather: {{ summary.dominant_condition }}</li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
