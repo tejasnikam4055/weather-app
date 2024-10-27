@@ -95,8 +95,8 @@ def fetch_weather_data(city):
     
 
 def send_alert_email(subject, to_email, body):
-    from_email = yourmail@gmail.com"  # Your full Gmail address
-    app_password = "your 16 character app_password "     # Use your App Password here
+    from_email = "tejasnikam12534@gmail.com"  # Your full Gmail address
+    app_password = "tpvi vyhi dgrq mryl "     # Use your App Password here
 
     # Create the message
     msg = MIMEMultipart()
