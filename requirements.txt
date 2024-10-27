@@ -140,7 +140,7 @@ prometheus_client==0.20.0
 promise==2.3
 prompt_toolkit==3.0.47
 protobuf==4.25.3
-psutil==6.0.0
+psutil==5.9.0
 pure-eval==0.2.2
 pyarrow==16.1.0
 pycparser==2.22
@@ -151,7 +151,6 @@ Pygments==2.18.0
 pylint==3.2.6
 pymongo==4.8.0
 pyparsing==3.1.2
-pypiwin32==223
 python-dateutil==2.9.0.post0
 python-engineio==4.9.1
 python-json-logger==2.0.7
@@ -159,8 +158,6 @@ python-multipart==0.0.9
 python-socketio==5.11.3
 pyttsx3==2.90
 pytz==2024.1
-pywin32
-pywinpty==2.0.13
 PyYAML==6.0.1
 pyzmq==26.0.3
 qtconsole==5.5.2
@@ -191,7 +188,6 @@ tensorboard-data-server==0.7.2
 tensorflow==2.16.1
 tensorflow-datasets==4.9.6
 tensorflow-docs==2024.2.5.73858
-tensorflow-intel==2.16.1
 tensorflow-metadata==1.15.0
 termcolor==2.4.0
 terminado==0.18.1
@@ -217,7 +213,6 @@ websocket-client==1.8.0
 Werkzeug==3.0.3
 wheel==0.43.0
 widgetsnbextension==4.0.11
-win32-setctime==1.1.0
 wrapt==1.16.0
 wsproto==1.2.0
 yarg==0.1.9
