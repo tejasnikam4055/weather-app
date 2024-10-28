@@ -20,8 +20,11 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 
-# Configuration for SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:tejas@localhost/weather_monitoring'
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -30,6 +33,9 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')  # Add your email here or fetch from env variable
 app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')  # Add your email password here or fetch from env variable
 app.config['MAIL_DEFAULT_SENDER'] = app.config['MAIL_USERNAME']
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = True
 
 # Initialize SQLAlchemy with app
 db = SQLAlchemy(app)
@@ -38,6 +44,11 @@ def get_ist_time():
     """Helper function to get current time in IST"""
     ist = pytz.timezone('Asia/Kolkata')
     return datetime.now(ist)
+
+
+# Initialize SQLAlchemy
+db = SQLAlchemy(app)
+
 
 class WeatherSummary(db.Model):
     __tablename__ = 'weathersummaries'
@@ -73,6 +84,20 @@ class AlertThreshold(db.Model):
     low_temp_threshold = db.Column(db.Float, nullable=False)
     consecutive_triggers = db.Column(db.Integer, default=2)
     email_recipient = db.Column(db.String(120), nullable=False)
+
+
+
+    # Add this function to initialize the database
+def initialize_database():
+    """Initialize database tables if they don't exist"""
+    try:
+        with app.app_context():
+            logger.info("Creating database tables...")
+            db.create_all()
+            logger.info("Database tables created successfully!")
+    except Exception as e:
+        logger.error(f"Error creating database tables: {e}")
+        raise
 def fetch_weather_data(city):
     """Fetch weather data from OpenWeatherMap API for a given city."""
     API_KEY = os.getenv('OPENWEATHER_API_KEY')
@@ -96,7 +121,7 @@ def fetch_weather_data(city):
 
 def send_alert_email(subject, to_email, body):
     from_email = "tejasnikam12534@gmail.com"  # Your full Gmail address
-    app_password = "tpvi vyhi dgrq mryl "     # Use your App Password here
+    app_password = "geff vvcz ulek twrr"     # Use your App Password here
 
     # Create the message
     msg = MIMEMultipart()
@@ -316,7 +341,7 @@ def run_daily_aggregation():
         while True:
             current_time = get_ist_time()
             
-            if current_time.hour ==  8 and current_time.minute == 6:
+            if current_time.hour ==  11 and current_time.minute == 6:
                 logger.info("Running daily aggregation...")
                 calculate_daily_aggregate()
                 time.sleep(10)  # 55 minutes
@@ -395,7 +420,31 @@ def verify_db():
             "status": "Database connection failed",
             "error": str(e)
         }), 500
+# Add this route to your Flask application
 
+@app.route('/initialize-db', methods=['GET'])
+def initialize_db():
+    try:
+        db.create_all()
+        # Test the tables by trying to query them
+        try:
+            WeatherSummary.query.first()
+            DailyWeather.query.first()
+            AlertThreshold.query.first()
+            return jsonify({
+                "status": "success",
+                "message": "Database tables created and verified successfully"
+            })
+        except Exception as e:
+            return jsonify({
+                "status": "error",
+                "message": f"Error verifying tables: {str(e)}"
+            }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error creating tables: {str(e)}"
+        }), 500
 @app.route('/weather', methods=['GET'])
 def get_weath():
     city = request.args.get('city')
