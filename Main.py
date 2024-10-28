@@ -86,18 +86,64 @@ class AlertThreshold(db.Model):
     email_recipient = db.Column(db.String(120), nullable=False)
 
 
-
-    # Add this function to initialize the database
+# Modify your initialize_database function to be more robust
 def initialize_database():
     """Initialize database tables if they don't exist"""
     try:
         with app.app_context():
-            logger.info("Creating database tables...")
+            # Check if tables exist first
+            inspector = db.inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            logger.info(f"Existing tables: {existing_tables}")
+            
+            # Create all tables if they don't exist
             db.create_all()
+            
+            # Verify tables were created
+            inspector = db.inspect(db.engine)
+            created_tables = inspector.get_table_names()
+            logger.info(f"Tables after creation: {created_tables}")
+            
+            # Verify specific required tables
+            required_tables = ['weathersummaries', 'daily_weather', 'alert_thresholds']
+            missing_tables = [table for table in required_tables if table not in created_tables]
+            
+            if missing_tables:
+                raise Exception(f"Failed to create tables: {missing_tables}")
+            
             logger.info("Database tables created successfully!")
+            return True
     except Exception as e:
-        logger.error(f"Error creating database tables: {e}")
+        logger.error(f"Error initializing database: {str(e)}")
         raise
+
+
+# Add a function to verify database connection and tables
+def verify_database():
+    """Verify database connection and required tables"""
+    try:
+        with app.app_context():
+            # Test database connection
+            db.session.execute(text('SELECT 1'))
+            
+            # Check for required tables
+            inspector = db.inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            required_tables = ['weathersummaries', 'daily_weather', 'alert_thresholds']
+            missing_tables = [table for table in required_tables if table not in existing_tables]
+            
+            if missing_tables:
+                logger.error(f"Missing required tables: {missing_tables}")
+                return False
+                
+            return True
+    except Exception as e:
+        logger.error(f"Database verification failed: {str(e)}")
+        return False
+    # Add this function to initialize the database
+
 def fetch_weather_data(city):
     """Fetch weather data from OpenWeatherMap API for a given city."""
     API_KEY = os.getenv('OPENWEATHER_API_KEY')
@@ -529,6 +575,7 @@ def manage_alert_thresholds():
 if __name__ == '__main__':
     with app.app_context():
         try:
+            initialize_database()
             db.create_all()
             logger.info("Database tables created successfully")
         except Exception as e:
