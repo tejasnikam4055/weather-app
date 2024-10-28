@@ -47,7 +47,7 @@ def get_ist_time():
 
 
 # Initialize SQLAlchemy
-db = SQLAlchemy(app)
+
 
 
 class WeatherSummary(db.Model):
