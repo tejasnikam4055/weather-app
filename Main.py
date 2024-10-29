@@ -387,7 +387,7 @@ def run_daily_aggregation():
         while True:
             current_time = get_ist_time()
             
-            if current_time.hour ==  9 and current_time.minute == 20:
+            if current_time.hour ==  9 and current_time.minute == 30:
                 logger.info("Running daily aggregation...")
                 calculate_daily_aggregate()
                 time.sleep(10)  # 55 minutes
@@ -575,6 +575,7 @@ def manage_alert_thresholds():
 if __name__ == '__main__':
     with app.app_context():
         try:
+            start_background_threads()
             initialize_database()
             db.create_all()
             logger.info("Database tables created successfully")
@@ -582,6 +583,6 @@ if __name__ == '__main__':
             logger.error(f"Error creating database tables: {str(e)}")
         
         # Start both background threads
-        start_background_threads()
+       
     port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port) 
