@@ -387,7 +387,7 @@ def run_daily_aggregation():
         while True:
             current_time = get_ist_time()
             
-            if current_time.hour ==  9 and current_time.minute == 45:
+            if current_time.hour ==  10 and current_time.minute == 45:
                 logger.info("Running daily aggregation...")
                 calculate_daily_aggregate()
                 time.sleep(10)  # 55 minutes
