@@ -212,7 +212,7 @@ CREATE TABLE alert_thresholds (
     email_recipient VARCHAR(120) NOT NULL
 );
 ```
-###IMP
+## IMP
 for getting daily report of each city you have to change 
 def run_daily_aggregation():
     """Function to run daily aggregation periodically"""
