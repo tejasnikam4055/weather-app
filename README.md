@@ -213,18 +213,8 @@ CREATE TABLE alert_thresholds (
 );
 ```
 ## IMP
-for getting daily report of each city you have to change 
-def run_daily_aggregation():
-    """Function to run daily aggregation periodically"""
-    with app.app_context():
-        while True:
-            current_time = get_ist_time()
-            if current_time.hour ==  11 and current_time.minute == 6:
-                logger.info("Running daily aggregation...")
-                calculate_daily_aggregate()
-                time.sleep(10)  # 55 minutes
-            else:
-                time.sleep(30)  # Check again in 30 seconds
+## for getting daily report of each city you have to change 
+
                 
 ## current_time.hour as per your requirement to calculate daily report of each city 
 ## Troubleshooting
