@@ -1,20 +1,7 @@
 # Weather Monitoring Application
 
 A robust Flask-based weather monitoring system that tracks weather conditions across multiple Indian cities, provides daily summaries, and sends email alerts for extreme weather conditions.
-###IMP
-for getting daily report of each city you have to change 
-def run_daily_aggregation():
-    """Function to run daily aggregation periodically"""
-    with app.app_context():
-        while True:
-            current_time = get_ist_time()
-            if current_time.hour ==  11 and current_time.minute == 6:
-                logger.info("Running daily aggregation...")
-                calculate_daily_aggregate()
-                time.sleep(10)  # 55 minutes
-            else:
-                time.sleep(30)  # Check again in 30 seconds
-current_time.hour as per your requirement to calculate daily report of each city 
+
 ## Features
 
 - **Real-time Weather Monitoring**: Tracks weather data for major Indian cities (Delhi, Mumbai, Chennai, Bangalore, Kolkata, Hyderabad)
@@ -225,7 +212,20 @@ CREATE TABLE alert_thresholds (
     email_recipient VARCHAR(120) NOT NULL
 );
 ```
-
+###IMP
+for getting daily report of each city you have to change 
+def run_daily_aggregation():
+    """Function to run daily aggregation periodically"""
+    with app.app_context():
+        while True:
+            current_time = get_ist_time()
+            if current_time.hour ==  11 and current_time.minute == 6:
+                logger.info("Running daily aggregation...")
+                calculate_daily_aggregate()
+                time.sleep(10)  # 55 minutes
+            else:
+                time.sleep(30)  # Check again in 30 seconds
+current_time.hour as per your requirement to calculate daily report of each city 
 ## Troubleshooting
 
 Common issues and solutions:
