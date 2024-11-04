@@ -225,7 +225,8 @@ def run_daily_aggregation():
                 time.sleep(10)  # 55 minutes
             else:
                 time.sleep(30)  # Check again in 30 seconds
-current_time.hour as per your requirement to calculate daily report of each city 
+                
+## current_time.hour as per your requirement to calculate daily report of each city 
 ## Troubleshooting
 
 Common issues and solutions:
